@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  postgis:
+    image: postgis/postgis:15-3.3
+    container_name: postgis
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: geoportal
+    ports:
+     - "55432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  pg_tileserv:
+    image: pramsey/pg_tileserv
+    container_name: pg_tileserv
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgis:5432/geoportal
+    ports:
+      - "7800:7800"
+    depends_on:
+      - postgis
+    restart: unless-stopped
+
+  pg_featureserv:
+    image: pramsey/pg_featureserv
+    container_name: pg_featureserv
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgis:5432/geoportal
+    ports:
+      - "9000:9000"
+    depends_on:
+      - postgis
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgis
+    restart: unless-stopped
+
+  
